@@ -18,8 +18,23 @@ import os
 import fnmatch
 from glob import glob
 from distutils.core import setup
+from DistUtilsExtra.command.build_i18n import build_i18n
+from DistUtilsExtra.command.clean_i18n import clean_i18n
 
 APPNAME = 'filerock-client'
+
+class clean_extra(clean_i18n):
+    def run(self):
+        clean_i18n.run(self)
+
+        for path, dirs, files in os.walk('.'):
+            for f in files:
+                f = os.path.join(path, f)
+                if f.endswith('.pyc'):
+                    self.spawn(['rm', f])
+            for d in dirs:
+                if d == '__pycache__':
+                    self.spawn(['rm', '-r', os.path.join(path,d)])
 
 def opj(*args):
     path = os.path.join(*args)
@@ -73,4 +88,7 @@ setup(
     scripts = ['FileRock.py'],
     packages = packages,
     data_files = data_files,
+    cmdclass = {
+        'clean' : clean_extra,
+        'build_i18n' :  build_i18n}
 )
